@@ -5,7 +5,7 @@ Commands </br>
  |</br>
  |</br>
  |</br>
- V</br>
+V</br>
 /gen {prompt}    - Generates an image with a prompt
 
 /TFU             - Cleares serverside images
