@@ -1,7 +1,11 @@
 # SD-discord-bot
-this it a discord bot for stable diffusion with a few commands and  method of banning words
+This it a discord bot for stable diffusion with a few commands and  method of banning words
 
-
+Commands
+ |
+ |
+ |
+ V
 /gen {prompt}    - Generates an image with a prompt
 
 /TFU             - Cleares serverside images
