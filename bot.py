@@ -9,12 +9,9 @@ from PIL import Image
 import aiohttp
 import io
 
-# Made by Zombro01
-# do not forget to make a file called ban.txt for all banned words
-
-
-# Discord bot token
-DISCORD_TOKEN = "bot_token_here"
+# Discord token
+DISCORD_TOKEN = "Your_bots_token_here"
+log_requests = True  # Initialize the log_requests variable
 
 # Initialize bot with all intents enabled and the prefix /
 bot = commands.Bot(command_prefix='/', intents=discord.Intents.all())
@@ -48,13 +45,14 @@ request_queue = asyncio.Queue()
 # Function to generate image and send to Discord
 async def generate_image(ctx, sentence, command_message, status_message):
     try:
-        print("Generating image...")
+        if log_requests:
+            print("Generating image...")
 
         payload = {
             "prompt": sentence,
             "steps": 20,
-            "negative_prompt": "negitive prompt",
-            "sampler_name": "sampler",
+            "negative_prompt": "NSFW, nude, (((big breasts))), bad-hands-5 easynegative ng_deepnegative_v1_75t verybadimagenegative_v1.3, ugly,",
+            "sampler_name": "Euler a",
         }
         response = requests.post(url=f'{API_URL}/sdapi/v1/txt2img', json=payload)
         response.raise_for_status()
@@ -66,24 +64,28 @@ async def generate_image(ctx, sentence, command_message, status_message):
             temp_file.write(image_data)
             temp_file_path = temp_file.name
 
-        print("Image generated. Sending to Discord...")
+        if log_requests:
+            print("Image generated. Sending to Discord...")
 
         message = await ctx.send(f"Prompt: {sentence}\nUser: {ctx.author.mention}\n", file=discord.File(temp_file_path))
 
         await message.add_reaction("👍")
 
-        print("Image sent to Discord. Cleaning up...")
+        if log_requests:
+            print("Image sent to Discord. Cleaning up...")
 
         await command_message.delete()  # Delete the original command message
         await status_message.delete()   # Delete the queue status message
 
         os.remove(temp_file_path)
 
-        print("Temporary files deleted. Request completed.")
+        if log_requests:
+            print("Temporary files deleted. Request completed.")
 
     except Exception as e:
         await ctx.send(f"An error occurred: {e}")
-        print(f"An error occurred: {e}")
+        if log_requests:
+            print(f"An error occurred: {e}")
 
 # Function to process the request queue
 async def process_queue():
@@ -94,11 +96,13 @@ async def process_queue():
 
 @bot.command()
 async def gen(ctx, *, sentence: str):
-    print("Request received")
+    if log_requests:
+        print("Request received")
 
     command_message = ctx.message  # Store the command message
 
-    print(f"User: {ctx.author} Prompt: {sentence}")
+    if log_requests:
+        print(f"User: {ctx.author} Prompt: {sentence}")
 
     if banned_words_enabled and contains_banned_words(sentence):
         await ctx.message.delete()
@@ -115,29 +119,35 @@ async def gen(ctx, *, sentence: str):
 async def clear(ctx):
     if isinstance(ctx.channel, discord.DMChannel):
         try:
-            print("Clearing bot's messages...")
+            if log_requests:
+                print("Clearing bot's messages...")
             async for message in ctx.channel.history(limit=None):
                 if message.author == bot.user:
                     await message.delete()
             await asyncio.sleep(60)
-            print("Bot messages cleared.")
+            if log_requests:
+                print("Bot messages cleared.")
         except Exception as e:
-            print(f"An error occurred: {e}")
+            if log_requests:
+                print(f"An error occurred: {e}")
     else:
         await ctx.send("This command can only be used in DMs.")
 
 @bot.command()
 async def TFU(ctx):
     try:
-        print("Clearing bot's messages...")
+        if log_requests:
+            print("Clearing bot's messages...")
         for channel in ctx.guild.text_channels:
             async for message in channel.history(limit=None):
                 if message.author == bot.user:
                     await message.delete()
         await asyncio.sleep(60)
-        print("Bot's messages cleared.")
+        if log_requests:
+            print("Bot's messages cleared.")
     except Exception as e:
-        print(f"An error occurred: {e}")
+        if log_requests:
+            print(f"An error occurred: {e}")
 
 @bot.command(name="TBW")
 async def toggle_banned_words(ctx):
@@ -150,15 +160,18 @@ async def toggle_banned_words(ctx):
     await confirmation_message.delete()
 
 @bot.command(name="TLR")
-@commands.has_permissions(administrator=True)
 async def toggle_log_requests(ctx):
-    global log_requests
-    log_requests = not log_requests
-    state = "enabled" if log_requests else "disabled"
-    confirmation_message = await ctx.send(f"Logging of requests {state}.")
-    await asyncio.sleep(5)
-    await ctx.message.delete()
-    await confirmation_message.delete()
+    global log_requests  # Declare that you want to modify the global variable
+    if ctx.author.guild_permissions.administrator:
+        log_requests = not log_requests
+        state = "enabled" if log_requests else "disabled"
+        confirmation_message = await ctx.send(f"Logging of requests {state}.")
+
+        await asyncio.sleep(5)
+        await ctx.message.delete()
+        await confirmation_message.delete()
+    else:
+        await ctx.send("You do not have permission to use this command.")
 
 @bot.event
 async def on_reaction_add(reaction, user):
@@ -173,8 +186,9 @@ async def on_reaction_add(reaction, user):
                 if attachment.filename.endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp')):
                     image_urls.append(attachment.url)
 
-            print(f"Number of image attachments: {len(image_urls)}")
-            print(f"Image attachments: {image_urls}")
+            if log_requests:
+                print(f"Number of image attachments: {len(image_urls)}")
+                print(f"Image attachments: {image_urls}")
 
             if image_urls:
                 # Send the image URLs to the user's DM
@@ -182,22 +196,26 @@ async def on_reaction_add(reaction, user):
                 for image_url in image_urls:
                     await user.send(image_url)
 
-                print(f"Sent liked image URLs to {user.name}")
+                if log_requests:
+                    print(f"Sent liked image URLs to {user.name}")
             else:
-                print("No image attachments found.")
+                if log_requests:
+                    print("No image attachments found.")
 
         except discord.Forbidden:
-            print(f"Cannot send messages to {user.name}.")
+            if log_requests:
+                print(f"Cannot send messages to {user.name}.")
         except Exception as e:
-            print(f"An error occurred sending DM: {e}")
+            if log_requests:
+                print(f"An error occurred sending DM: {e}")
 
 # Event: Triggered when the bot is ready
 @bot.event
 async def on_ready():
-    print("Setup done. Bot is active")
-    print("-----------------------------------------")
-    # Start processing the request queue
-    bot.loop.create_task(process_queue())
+    if log_requests:  # Add a colon here
+        print("Bot is ready!")
+        # Start processing the request queue
+        bot.loop.create_task(process_queue())
 
 # Run the bot
 bot.run(DISCORD_TOKEN)
