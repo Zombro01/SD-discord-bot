@@ -10,7 +10,7 @@ import aiohttp
 import io
 
 # Discord token
-DISCORD_TOKEN = "Your_bots_token_here"
+DISCORD_TOKEN = "Discord_Bot_Token"
 log_requests = True  # Initialize the log_requests variable
 
 # Initialize bot with all intents enabled and the prefix /
@@ -150,6 +150,7 @@ async def TFU(ctx):
             print(f"An error occurred: {e}")
 
 @bot.command(name="TBW")
+@commands.has_permissions(administrator=True)
 async def toggle_banned_words(ctx):
     global banned_words_enabled
     banned_words_enabled = not banned_words_enabled
@@ -160,18 +161,16 @@ async def toggle_banned_words(ctx):
     await confirmation_message.delete()
 
 @bot.command(name="TLR")
+@commands.has_permissions(administrator=True)
 async def toggle_log_requests(ctx):
     global log_requests  # Declare that you want to modify the global variable
-    if ctx.author.guild_permissions.administrator:
-        log_requests = not log_requests
-        state = "enabled" if log_requests else "disabled"
-        confirmation_message = await ctx.send(f"Logging of requests {state}.")
+    log_requests = not log_requests
+    state = "enabled" if log_requests else "disabled"
+    confirmation_message = await ctx.send(f"Logging of requests {state}.")
 
-        await asyncio.sleep(5)
-        await ctx.message.delete()
-        await confirmation_message.delete()
-    else:
-        await ctx.send("You do not have permission to use this command.")
+    await asyncio.sleep(5)
+    await ctx.message.delete()
+    await confirmation_message.delete()
 
 @bot.event
 async def on_reaction_add(reaction, user):
@@ -212,7 +211,7 @@ async def on_reaction_add(reaction, user):
 # Event: Triggered when the bot is ready
 @bot.event
 async def on_ready():
-    if log_requests:  # Add a colon here
+    if log_requests:
         print("Bot is ready!")
         # Start processing the request queue
         bot.loop.create_task(process_queue())
