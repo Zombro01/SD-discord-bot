@@ -13,3 +13,5 @@ V</br>
 /TBW             - Toggles banned words (admin needed)
 /clear           - Cleares the users DM (only works in DM's)
 ```
+this is an example: 
+<img  src="https://raw.githubusercontent.com/Zombro01/SD-discord-bot/main/image.png">
